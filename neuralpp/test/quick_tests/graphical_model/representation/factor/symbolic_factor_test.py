@@ -39,7 +39,7 @@ def test_sympy_if_then_else_condition():
     conditioned1 = symbolic.condition({x: 1})
 
     expected1 = if_then_else(y_sympy < 1, 2, 3)
-    assert conditioned1.expression.structure_eq(expected1)
+    assert conditioned1.expression.syntactic_eq(expected1)
 
     conditioned2 = symbolic.condition({x: 1, y:2})
     expected2 = SymPyConstant.new_constant(3)

@@ -32,6 +32,7 @@ def test_normal_polynomial_approximation():
             normal_piecewise_polynomial_approximation.replace(x, BasicExpression.new_constant(value)))
 
     approximate_normal_values = [approximate_normal(x) for x in x_axis]
+    print([abs(t - a) for (t, a) in zip(true_normal_values, approximate_normal_values)])
 
     epsilon = 0.01 / sigma_value
     assert all([abs(t - a) < epsilon for (t, a) in zip(true_normal_values, approximate_normal_values)])

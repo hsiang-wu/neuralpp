@@ -128,24 +128,22 @@ def test_quantifier_normalizer():
     k = BasicVariable('k', int)
     jj, kk = sympy.symbols('j k')
     sum_ = BasicSummation(int, i, Z3SolverExpression.from_expression(j < i) & (i < k), if_then_else(j > 5, i + j, i))
-    assert simplifier.simplify(normalizer.normalize(sum_, empty_context), context).syntactic_eq(
-        if_then_else(j > 5,
-                     SymPyExpression.from_sympy_object(
-                         - jj ** 2 / 2 - jj * (jj - kk + 1) - jj / 2 + kk ** 2 / 2 - kk / 2,
-                         {jj: int, kk: int}),
-                     SymPyExpression.from_sympy_object(- jj ** 2 / 2 - jj / 2 + kk ** 2 / 2 - kk / 2,
-                                                       {jj: int, kk: int}),
-                     ))
-    assert normalizer.normalize(sum_, Z3SolverExpression.from_expression(j == 6)).syntactic_eq(
+    assert simplifier.simplify(normalizer.normalize(sum_, empty_context), empty_context).sympy_object == \
+           sympy.Piecewise((-jj ** 2 / 2 - jj * (jj - kk + 1) - jj / 2 + kk ** 2 / 2 - kk / 2, jj > 5), (-jj ** 2 / 2 - jj / 2 + kk ** 2 / 2 - kk / 2, True))
+    context_j_6 = Z3SolverExpression.from_expression(j == 6)
+    assert simplifier.simplify(normalizer.normalize(sum_, context_j_6), context_j_6).syntactic_eq(
         SymPyExpression.from_sympy_object(
             kk ** 2 / 2 + 11 * kk / 2 - 63,
             {kk: int})
     )
 
     sum_ = BasicSummation(int, i, Z3SolverExpression.from_expression(j < i), if_then_else(i > 5, i + j, i))
+    print('-----')
+    print(normalizer.normalize(sum_, empty_context))
+    print(normalizer.normalize(BasicSummation(int, i, Z3SolverExpression.from_expression(j < i) & ~(5 < i), i), empty_context))
     assert normalizer.normalize(sum_, empty_context).syntactic_eq(
         BasicSummation(int, i, Z3SolverExpression.from_expression(j < i) & (5 < i), i + j) +
-        BasicSummation(int, i, Z3SolverExpression.from_expression(j < i) & ~(5 < i), i))
+        normalizer.normalize(BasicSummation(int, i, Z3SolverExpression.from_expression(j < i) & ~(5 < i), i), empty_context))
 
     assert (normalizer.normalize(BasicSummation(int, j, Z3SolverExpression.from_expression(10 > j) & (j > 5), i + j),
                                  empty_context)).syntactic_eq(30 + 4 * i)
